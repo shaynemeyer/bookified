@@ -1,5 +1,12 @@
 'use client';
 
+import {
+  Show,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+  useUser,
+} from '@clerk/nextjs';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,6 +20,7 @@ const navItems = [
 
 function Navbar() {
   const pathName = usePathname();
+  const { isLoaded, user } = useUser();
 
   return (
     <header className="w-full fixed z-50 bg-('--bg-primary')">
@@ -45,6 +53,23 @@ function Navbar() {
               </Link>
             );
           })}
+
+          <div className="flex gap-7.5 items-center">
+            <Show when="signed-out">
+              <SignInButton />
+              <SignUpButton />
+            </Show>
+            <Show when="signed-in">
+              <div className="nav-user-link">
+                <UserButton />
+                {isLoaded && user?.firstName && (
+                  <Link href="/subscriptions" className="nav-user-name">
+                    {user.firstName}
+                  </Link>
+                )}
+              </div>
+            </Show>
+          </div>
         </nav>
       </div>
     </header>
