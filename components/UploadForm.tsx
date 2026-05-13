@@ -12,6 +12,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useAuth } from '@clerk/nextjs';
+import { toast } from 'sonner';
+import {
+  checkBookExists,
+  createBook,
+  saveBookSegments,
+} from '@/lib/actions/book.actions';
+import { useRouter } from 'next/navigation';
+import { parsePDFFile, generateSlug } from '@/lib/utils';
+import { upload } from '@vercel/blob/client';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -74,10 +84,14 @@ export default function UploadForm() {
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
+  const { userId } = useAuth();
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
     setValue,
+    reset,
     control,
     formState: { errors },
   } = useForm<FormValues>({
@@ -87,10 +101,119 @@ export default function UploadForm() {
 
   const selectedVoice = useWatch({ control, name: 'voice' });
 
-  const onSubmit = async () => {
+  const onSubmit = async (data: FormValues) => {
+    if (!userId) {
+      return toast.error('Please login to upload books');
+    }
+
     setIsSubmitting(true);
-    // TODO: call server action
-    setIsSubmitting(false);
+
+    // TODO: PostHog -> Track Book Uploads...
+
+    try {
+      const existsCheck = await checkBookExists(data.title);
+
+      if (existsCheck.exists && existsCheck.book) {
+        toast.info('Book with the same title already exists.');
+        reset();
+        router.push(`/books/${existsCheck.book.slug}`);
+        return;
+      }
+
+      if (!pdfFile) {
+        toast.error('Please upload a PDF file.');
+        return;
+      }
+
+      const fileTitle = generateSlug(data.title);
+
+      const parsedPDF = await parsePDFFile(pdfFile);
+
+      if (parsedPDF.content.length === 0) {
+        toast.error(
+          'Failed to parse PDF. Please try again with a different file.',
+        );
+        return;
+      }
+
+      const uploadedPdfBlob = await upload(fileTitle, pdfFile, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
+        contentType: 'application/pdf',
+      });
+
+      let coverUrl: string;
+      let coverBlobKey: string;
+
+      if (coverFile) {
+        const uploadedCoverBlob = await upload(
+          `${fileTitle}_cover.png`,
+          coverFile,
+          {
+            access: 'public',
+            handleUploadUrl: '/api/upload',
+            contentType: coverFile.type,
+          },
+        );
+        coverUrl = uploadedCoverBlob.url;
+        coverBlobKey = uploadedCoverBlob.pathname;
+      } else {
+        const response = await fetch(parsedPDF.cover);
+        const blob = await response.blob();
+
+        const uploadedCoverBlob = await upload(`${fileTitle}_cover.png`, blob, {
+          access: 'public',
+          handleUploadUrl: '/api/upload',
+          contentType: 'image/png',
+        });
+        coverUrl = uploadedCoverBlob.url;
+        coverBlobKey = uploadedCoverBlob.pathname;
+      }
+
+      const book = await createBook({
+        clerkId: userId,
+        title: data.title,
+        author: data.author,
+        persona: data.persona,
+        fileURL: uploadedPdfBlob.url,
+        fileBlobKey: uploadedPdfBlob.pathname,
+        coverURL: coverUrl,
+        coverBlobKey,
+        fileSize: pdfFile.size,
+      });
+
+      if (!book.success) {
+        toast.error((book.error as string) || 'Failed to create book');
+
+        return;
+      }
+
+      if (book.alreadyExists) {
+        toast.info('Book with same title already exists.');
+        reset();
+        router.push(`/books/${book.data.slug}`);
+        return;
+      }
+
+      const segments = await saveBookSegments(
+        book.data.id,
+        userId,
+        parsedPDF.content,
+      );
+
+      if (!segments.success) {
+        toast.error('Failed to save book segments');
+        throw new Error('Failed to save book segments');
+      }
+
+      reset();
+      router.push('/');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to upload book. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -135,12 +258,18 @@ export default function UploadForm() {
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <span className="upload-dropzone-hint">Click to change file</span>
+                <span className="upload-dropzone-hint">
+                  Click to change file
+                </span>
               </>
             ) : (
               <>
-                <span className="upload-dropzone-text">Click to upload PDF</span>
-                <span className="upload-dropzone-hint">PDF file (max 50MB)</span>
+                <span className="upload-dropzone-text">
+                  Click to upload PDF
+                </span>
+                <span className="upload-dropzone-hint">
+                  PDF file (max 50MB)
+                </span>
               </>
             )}
           </div>
@@ -175,7 +304,11 @@ export default function UploadForm() {
         {/* Interviewer Persona */}
         <div>
           <label className="form-label">Choose Interviewer Persona</label>
-          <Select onValueChange={(v) => setValue('persona', v, { shouldValidate: true })}>
+          <Select
+            onValueChange={(v) =>
+              setValue('persona', v, { shouldValidate: true })
+            }
+          >
             <SelectTrigger className="select-trigger">
               <SelectValue placeholder="Select persona" />
             </SelectTrigger>
@@ -195,7 +328,9 @@ export default function UploadForm() {
             </SelectContent>
           </Select>
           {errors.persona && (
-            <p className="text-red-500 text-sm mt-1">{errors.persona.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.persona.message}
+            </p>
           )}
         </div>
 
@@ -264,13 +399,16 @@ export default function UploadForm() {
                     onClick={(e) => {
                       e.stopPropagation();
                       setCoverFile(null);
-                      if (coverInputRef.current) coverInputRef.current.value = '';
+                      if (coverInputRef.current)
+                        coverInputRef.current.value = '';
                     }}
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <span className="upload-dropzone-hint">Click to change file</span>
+                <span className="upload-dropzone-hint">
+                  Click to change file
+                </span>
               </>
             ) : (
               <span className="upload-dropzone-text">
