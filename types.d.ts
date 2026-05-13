@@ -42,7 +42,7 @@ export interface TextSegment {
 export interface BookCardProps {
   title: string;
   author: string;
-  coverURL: string;
+  coverURL: string | null;
   slug: string;
 }
 

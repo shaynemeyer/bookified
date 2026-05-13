@@ -1,7 +1,6 @@
 import { BookCardProps } from '@/types';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
 
 function BookCard({ title, author, coverURL, slug }: BookCardProps) {
   return (
@@ -10,7 +9,7 @@ function BookCard({ title, author, coverURL, slug }: BookCardProps) {
         <figure className="book-card-figure">
           <div className="book-card-cover-wrapper">
             <Image
-              src={coverURL}
+              src={coverURL ?? '/placeholder-cover.png'}
               alt={title}
               width={133}
               height={200}

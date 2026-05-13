@@ -1,11 +1,29 @@
 'use server';
 
-import { eq } from 'drizzle-orm';
+import { desc, eq, like, or } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
-import { db } from '@/lib/db';
-import { books, bookSegments } from '@/lib/db/schema';
+import { db, books, bookSegments } from '@/lib/db';
 import { generateSlug } from '@/lib/utils';
 import { CreateBook, TextSegment } from '@/types';
+
+export const getAllBooks = async (search?: string) => {
+  try {
+    const where = search
+      ? or(like(books.title, `%${search}%`), like(books.author, `%${search}%`))
+      : undefined;
+
+    const result = await db
+      .select()
+      .from(books)
+      .where(where)
+      .orderBy(desc(books.createdAt));
+
+    return { success: true as const, data: result };
+  } catch (e) {
+    console.error('Error fetching books', e);
+    return { success: false as const, error: e instanceof Error ? e.message : 'Unknown error' };
+  }
+};
 
 export const checkBookExists = async (title: string) => {
   try {
@@ -22,7 +40,10 @@ export const checkBookExists = async (title: string) => {
     return { exists: false };
   } catch (e) {
     console.error('Error checking book exists', e);
-    return { exists: false, error: e instanceof Error ? e.message : 'Unknown error' };
+    return {
+      exists: false,
+      error: e instanceof Error ? e.message : 'Unknown error',
+    };
   }
 };
 
@@ -52,7 +73,10 @@ export const createBook = async (data: CreateBook) => {
     return { success: true, data: book };
   } catch (e) {
     console.error('Error creating a book', e);
-    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' };
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : 'Unknown error',
+    };
   }
 };
 
@@ -73,7 +97,8 @@ export const saveBookSegments = async (
       }),
     );
 
-    await db.transaction(async (tx: typeof db) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await db.transaction(async (tx: any) => {
       await tx.insert(bookSegments).values(segmentsToInsert);
       await tx
         .update(books)
@@ -84,6 +109,9 @@ export const saveBookSegments = async (
     return { success: true, data: { segmentsCreated: segments.length } };
   } catch (e) {
     console.error('Error saving book segments', e);
-    return { success: false, error: e instanceof Error ? e.message : 'Unknown error' };
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : 'Unknown error',
+    };
   }
 };
