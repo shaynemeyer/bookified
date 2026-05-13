@@ -53,32 +53,3 @@ export const bookSegments = sqliteTable(
   ],
 )
 
-export const voiceSessions = sqliteTable(
-  'voice_sessions',
-  {
-    id: integer('id').primaryKey({ autoIncrement: true }),
-    clerkId: text('clerk_id').notNull(),
-    bookId: integer('book_id')
-      .notNull()
-      .references(() => books.id),
-    startedAt: integer('started_at', { mode: 'timestamp_ms' })
-      .notNull()
-      .$defaultFn(() => new Date()),
-    endedAt: integer('ended_at', { mode: 'timestamp_ms' }),
-    durationSeconds: integer('duration_seconds').notNull().default(0),
-    billingPeriodStart: integer('billing_period_start', {
-      mode: 'timestamp_ms',
-    }).notNull(),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' })
-      .notNull()
-      .$defaultFn(() => new Date()),
-    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
-      .notNull()
-      .$defaultFn(() => new Date()),
-  },
-  (t) => [
-    index('voice_clerk_billing_idx').on(t.clerkId, t.billingPeriodStart),
-    index('voice_clerk_idx').on(t.clerkId),
-    index('voice_billing_idx').on(t.billingPeriodStart),
-  ],
-)

@@ -80,6 +80,23 @@ export const createBook = async (data: CreateBook) => {
   }
 };
 
+export const getBookBySlug = async (slug: string) => {
+  try {
+    const book = await db.query.books.findFirst({
+      where: eq(books.slug, slug),
+    });
+
+    if (!book) {
+      return { success: false as const, error: 'Not found' };
+    }
+
+    return { success: true as const, data: book };
+  } catch (e) {
+    console.error('Error fetching book by slug', e);
+    return { success: false as const, error: e instanceof Error ? e.message : 'Unknown error' };
+  }
+};
+
 export const saveBookSegments = async (
   bookId: number,
   clerkId: string,

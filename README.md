@@ -1,6 +1,6 @@
 # Bookified
 
-Transform your books into interactive AI conversations. Upload PDFs and chat with your books using voice.
+Transform your books into interactive AI conversations. Upload PDFs and chat with your books using text.
 
 ## Tech Stack
 

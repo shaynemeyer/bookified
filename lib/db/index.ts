@@ -14,6 +14,6 @@ export const db: any = isPostgres
   ? pgDrizzle(neon(url), { schema: pgSchema })
   : sqliteDrizzle(createClient({ url }), { schema: sqliteSchema })
 
-export const { books, bookSegments, voiceSessions } = isPostgres
+export const { books, bookSegments } = isPostgres
   ? pgSchema
   : sqliteSchema

@@ -4,7 +4,7 @@ import Link from 'next/link';
 const steps = [
   { title: 'Upload PDF', description: 'Add your book file' },
   { title: 'AI Processing', description: 'We analyze the content' },
-  { title: 'Voice Chat', description: 'Discuss with AI' },
+  { title: 'Text Chat', description: 'Discuss with AI' },
 ];
 
 function Hero() {
@@ -16,7 +16,7 @@ function Hero() {
           <p className="library-hero-description">
             Convert your books into interactive AI conversations.
             <br />
-            Listen, learn, and discuss your favorite reads.
+            Ask questions and discuss your favorite reads.
           </p>
 
           <div className="library-hero-illustration">

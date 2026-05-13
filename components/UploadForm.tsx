@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { BookOpen, X } from 'lucide-react';
@@ -27,7 +27,6 @@ const schema = z.object({
   title: z.string().min(1, 'Title is required'),
   author: z.string().min(1, 'Author is required'),
   persona: z.string().min(1, 'Please select a persona'),
-  voice: z.enum(['male', 'female']),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -68,7 +67,7 @@ function LoadingOverlay() {
             </div>
             <div className="loading-progress-item">
               <span className="loading-progress-status" />
-              <span>Preparing your voice assistant</span>
+              <span>Preparing your assistant</span>
             </div>
           </div>
         </div>
@@ -92,14 +91,10 @@ export default function UploadForm() {
     handleSubmit,
     setValue,
     reset,
-    control,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { voice: 'female' },
   });
-
-  const selectedVoice = useWatch({ control, name: 'voice' });
 
   const onSubmit = async (data: FormValues) => {
     if (!userId) {
@@ -303,7 +298,7 @@ export default function UploadForm() {
 
         {/* Interviewer Persona */}
         <div>
-          <label className="form-label">Choose Interviewer Persona</label>
+          <label className="form-label">Choose Chat Persona</label>
           <Select
             onValueChange={(v) =>
               setValue('persona', v, { shouldValidate: true })
@@ -332,43 +327,6 @@ export default function UploadForm() {
               {errors.persona.message}
             </p>
           )}
-        </div>
-
-        {/* Voice */}
-        <div>
-          <label className="form-label">Choose Assistant Voice</label>
-          <div className="voice-selector-options">
-            <label
-              className={`voice-selector-option ${
-                selectedVoice === 'male'
-                  ? 'voice-selector-option-selected'
-                  : 'voice-selector-option-default'
-              }`}
-            >
-              <input
-                type="radio"
-                {...register('voice')}
-                value="male"
-                className="accent-(--color-brand) w-4 h-4"
-              />
-              <span className="text-lg font-medium">Male</span>
-            </label>
-            <label
-              className={`voice-selector-option ${
-                selectedVoice === 'female'
-                  ? 'voice-selector-option-selected'
-                  : 'voice-selector-option-default'
-              }`}
-            >
-              <input
-                type="radio"
-                {...register('voice')}
-                value="female"
-                className="accent-(--color-brand) w-4 h-4"
-              />
-              <span className="text-lg font-medium">Female</span>
-            </label>
-          </div>
         </div>
 
         {/* Cover Image Upload */}

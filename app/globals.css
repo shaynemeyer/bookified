@@ -399,40 +399,9 @@
   .vapi-cover-wrapper {
     @apply relative shrink-0;
   }
-  .vapi-cover-glow {
-    @apply hidden;
-  }
   .vapi-cover-image {
     @apply relative w-[130px] h-[195px] sm:w-[162px] sm:h-[240px] rounded-lg object-cover;
     box-shadow: 0px 10px 30px 0px rgba(0, 0, 0, 0.1);
-  }
-  .vapi-mic-wrapper {
-    @apply absolute -bottom-1 -right-1 sm:-bottom-2 sm:-right-2;
-  }
-  .vapi-pulse-ring {
-    @apply absolute inset-0 w-[50px] h-[50px] sm:w-[60px] sm:h-[60px] bg-white rounded-full opacity-50 animate-ping;
-  }
-  .vapi-mic-btn {
-    @apply relative w-[50px] h-[50px] sm:w-[60px] sm:h-[60px] cursor-pointer rounded-full flex items-center justify-center transition-all duration-300 border-0 bg-white;
-
-    &:hover {
-      transform: scale(1.05);
-    }
-    &:hover svg {
-      @apply text-[#aaa];
-    }
-    &:active {
-      transform: scale(0.95);
-    }
-    &:disabled {
-      @apply opacity-50 cursor-not-allowed;
-    }
-  }
-  .vapi-mic-btn-active {
-    @apply bg-white;
-  }
-  .vapi-mic-btn-inactive {
-    @apply bg-white;
   }
   .vapi-badge-ai {
     @apply inline-block bg-white px-3 py-2 rounded-[4px];
@@ -466,24 +435,6 @@
     @apply text-sm font-medium text-[#212a3b];
     font-family: 'IBM Plex Serif', serif;
   }
-  .vapi-stat-box {
-    @apply bg-white rounded-[10px] px-2.5 py-5 min-w-[225px] text-center;
-  }
-  .vapi-stat-box-sm {
-    @apply bg-white rounded-[10px] px-2.5 py-5 min-w-[225px] text-center;
-  }
-  .vapi-stat-label {
-    @apply text-lg font-medium text-[#212a3b] mb-3;
-    font-family: 'IBM Plex Serif', serif;
-  }
-  .vapi-stat-value-lg {
-    @apply text-[30px] font-semibold text-black leading-9;
-    font-family: 'IBM Plex Serif', serif;
-  }
-  .vapi-stat-value-sm {
-    @apply text-sm font-semibold text-[var(--text-primary)] text-center truncate;
-  }
-
   /* ===========================================
      BOOKS LIBRARY COMPONENT
      =========================================== */
@@ -615,32 +566,22 @@
   }
 
   /* ===========================================
-     VOICE SELECTOR COMPONENT
+     CHAT INPUT BAR
      =========================================== */
-  .voice-selector-options {
-    @apply flex gap-4;
+  .chat-input-bar {
+    @apply flex items-end gap-3 px-4 pb-4 pt-2 border-t border-[#f3e4c7];
   }
-  .voice-selector-option {
-    @apply flex-1 flex items-center justify-center gap-3 p-4 border border-[var(--border-subtle)] rounded-lg cursor-pointer transition-all;
-    box-shadow: var(--shadow-soft-sm);
-
-    &:hover {
-      box-shadow: var(--shadow-soft);
-      transform: translateY(-2px);
-    }
+  .chat-input {
+    @apply flex-1 resize-none rounded-xl border border-[#e5d5b5] bg-[#fdfaf5]
+           px-4 py-3 text-sm text-[var(--text-primary)] leading-6
+           focus:outline-none focus:ring-2 focus:ring-[#663820]/30
+           disabled:opacity-50;
   }
-  .voice-selector-option-selected {
-    @apply bg-[var(--accent-light)] border-[var(--accent-warm)];
-  }
-  .voice-selector-option-default {
-    @apply bg-white;
-
-    &:hover {
-      @apply bg-[var(--bg-secondary)];
-    }
-  }
-  .voice-selector-option-disabled {
-    @apply opacity-50 cursor-not-allowed;
+  .chat-send-btn {
+    @apply shrink-0 w-10 h-10 rounded-full bg-[#663820] text-white
+           flex items-center justify-center transition-all duration-200
+           hover:bg-[#7a4428] active:scale-95
+           disabled:opacity-40 disabled:cursor-not-allowed;
   }
 
   /* ===========================================

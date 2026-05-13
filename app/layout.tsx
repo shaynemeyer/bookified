@@ -22,7 +22,7 @@ const monaSans = Mona_Sans({
 export const metadata: Metadata = {
   title: 'Bookified',
   description:
-    'Transform your books into interactive AI conversations. Upload PDFs, and chat with your books using voice.',
+    'Transform your books into interactive AI conversations. Upload PDFs and chat with your books using AI.',
 };
 
 export default function RootLayout({

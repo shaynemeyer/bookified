@@ -2,9 +2,7 @@ import { InferSelectModel } from 'drizzle-orm';
 import { ReactNode } from 'react';
 import { Control, FieldPath, FieldValues } from 'react-hook-form';
 import { LucideIcon } from 'lucide-react';
-import z from 'zod';
-import { UploadSchema } from '@/lib/zod';
-import { books, bookSegments, voiceSessions } from '@/lib/db/schema';
+import { books, bookSegments } from '@/lib/db/schema';
 
 // ============================================
 // DATABASE MODELS
@@ -12,13 +10,10 @@ import { books, bookSegments, voiceSessions } from '@/lib/db/schema';
 
 export type IBook = InferSelectModel<typeof books>;
 export type IBookSegment = InferSelectModel<typeof bookSegments>;
-export type IVoiceSession = InferSelectModel<typeof voiceSessions>;
 
 // ============================================
 // FORM & INPUT TYPES
 // ============================================
-
-export type BookUploadFormValues = z.infer<typeof UploadSchema>;
 
 export interface CreateBook {
   clerkId: string;
@@ -54,13 +49,6 @@ export interface Messages {
 export interface ShadowBoxProps {
   children: ReactNode;
   className?: string;
-}
-
-export interface VoiceSelectorProps {
-  disabled?: boolean;
-  className?: string;
-  value?: string;
-  onChange: (voiceId: string) => void;
 }
 
 export interface InputFieldProps<T extends FieldValues> {

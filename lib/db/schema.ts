@@ -8,6 +8,7 @@ import {
   index,
 } from 'drizzle-orm/pg-core'
 
+
 export const books = pgTable('books', {
   id: serial('id').primaryKey(),
   clerkId: text('clerk_id').notNull(),
@@ -47,24 +48,3 @@ export const bookSegments = pgTable(
   ],
 )
 
-export const voiceSessions = pgTable(
-  'voice_sessions',
-  {
-    id: serial('id').primaryKey(),
-    clerkId: text('clerk_id').notNull(),
-    bookId: integer('book_id')
-      .notNull()
-      .references(() => books.id),
-    startedAt: timestamp('started_at').notNull().defaultNow(),
-    endedAt: timestamp('ended_at'),
-    durationSeconds: integer('duration_seconds').notNull().default(0),
-    billingPeriodStart: timestamp('billing_period_start').notNull(),
-    createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at').notNull().defaultNow(),
-  },
-  (t) => [
-    index('voice_clerk_billing_idx').on(t.clerkId, t.billingPeriodStart),
-    index('voice_clerk_idx').on(t.clerkId),
-    index('voice_billing_idx').on(t.billingPeriodStart),
-  ],
-)
