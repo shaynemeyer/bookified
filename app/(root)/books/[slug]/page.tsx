@@ -54,7 +54,7 @@ export default async function BookDetailPage({
           </div>
         </div>
 
-        <BookChat bookTitle={book.title} persona={book.persona ?? undefined} />
+        <BookChat bookTitle={book.title} bookId={book.id} />
       </div>
     </main>
   );

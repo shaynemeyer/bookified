@@ -97,6 +97,22 @@ export const getBookBySlug = async (slug: string) => {
   }
 };
 
+export const getBookSegments = async (bookId: number, limit = 60) => {
+  try {
+    const rows = await db
+      .select({ content: bookSegments.content, segmentIndex: bookSegments.segmentIndex })
+      .from(bookSegments)
+      .where(eq(bookSegments.bookId, bookId))
+      .orderBy(bookSegments.segmentIndex)
+      .limit(limit);
+
+    return { success: true as const, data: rows };
+  } catch (e) {
+    console.error('Error fetching book segments', e);
+    return { success: false as const, error: e instanceof Error ? e.message : 'Unknown error' };
+  }
+};
+
 export const saveBookSegments = async (
   bookId: number,
   clerkId: string,

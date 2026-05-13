@@ -5,7 +5,7 @@ import { MessageCircle, SendHorizonal } from 'lucide-react';
 
 type Message = { role: 'user' | 'assistant'; text: string };
 
-export default function BookChat({ bookTitle, persona: _persona }: { bookTitle: string; persona?: string }) {
+export default function BookChat({ bookTitle: _bookTitle, bookId }: { bookTitle: string; bookId: number }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [pending, setPending] = useState(false);
@@ -19,14 +19,41 @@ export default function BookChat({ bookTitle, persona: _persona }: { bookTitle: 
     if (!input.trim() || pending) return;
     const userMsg = input.trim();
     setInput('');
-    setMessages((prev) => [...prev, { role: 'user', text: userMsg }]);
+    const updatedMessages = [...messages, { role: 'user' as const, text: userMsg }];
+    setMessages(updatedMessages);
     setPending(true);
-    // TODO: call server action or API route with userMsg + bookTitle
-    setMessages((prev) => [
-      ...prev,
-      { role: 'assistant', text: `(stub) You asked about "${bookTitle}": ${userMsg}` },
-    ]);
-    setPending(false);
+
+    const assistantMsg: Message = { role: 'assistant', text: '' };
+    setMessages((prev) => [...prev, assistantMsg]);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookId, messages: updatedMessages }),
+      });
+
+      if (!res.ok || !res.body) return;
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        setMessages((prev) => {
+          const copy = [...prev];
+          copy[copy.length - 1] = {
+            ...copy[copy.length - 1],
+            text: copy[copy.length - 1].text + chunk,
+          };
+          return copy;
+        });
+      }
+    } finally {
+      setPending(false);
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
